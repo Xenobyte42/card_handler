@@ -1,0 +1,15 @@
+.user-avatar {
+    max-width: 75px;
+    max-height: 75px;
+} 
+
+
+.card-pic {
+    max-width: 100px;
+    max-height: 100px;
+}
+
+.quest-pic {
+    max-width: 150px;
+    max-height: 150px;
+}
