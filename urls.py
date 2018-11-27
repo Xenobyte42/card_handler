@@ -7,6 +7,7 @@ from views import index, card_handler, auth
 def setup_jinja(app):
     aiohttp_jinja2.setup(app,
                          loader=jinja2.FileSystemLoader('./templates/'))
+    app['static_root_url'] = './static/'
 
 def setup_static_routes(app):
     app.router.add_static('/static/',
@@ -14,8 +15,10 @@ def setup_static_routes(app):
                           name='static')
 
 def setup_routes(app):
-    routes = [('*', '/', index),
-              ('*', '/auth', auth),
-              ('*', '/{card}', card_handler)]
+    routes = [('*', '/', index, 'index'),
+              ('*', '/auth', auth, 'auth'),
+              ('*', '/{card}', card_handler, 'card_handler')]
     for route in routes:
-        app.router.add_route(*route)
+        app.router.add_route(route[0], route[1], route[2], name=route[3])
+
+
