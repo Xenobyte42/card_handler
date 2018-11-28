@@ -19,9 +19,10 @@
                     <div>
                         <h3 class="d-inline text-white"><a href="{{ url('index') }}" class="text-white">Card Searcher</a></h3>
                     </div>
-                    <form class="form-inline my-2 my-lg-0">
-                        <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" formaction="">Search!</button>
+                    <form class="form-inline my-2 my-lg-0" action="{{ url('card_handler') }}" method="post">
+                        <label for="card"></label>
+                        <input class="form-control mr-sm-2" type="text" name="card" id="card" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" value="card">Search!</button>
                     </form>
                     
                     <div class="navbar-nav">
@@ -29,13 +30,13 @@
                             <div class="row">
                                 <div class="row">
                                     <div class="col-12">
-                                        <a class="p-2 text-white" href="">{{ login }}</a>
+                                        <a class="p-2 text-white" href="#">{{ login }}</a>
                                     </div>
                                     <div class="col-5 pl-4">
                                         <p class="text-white">Balance: {{ balance }}</p>
                                     </div>
                                     <div class="col-7">
-                                        <a class="p-2 text-white" href="{{ url('auth') }}">Log Out</a>
+                                        <a class="p-2 text-white" href="{{ url('logout') }}">Log Out</a>
                                     </div>
                                 </div>     
                             </div>

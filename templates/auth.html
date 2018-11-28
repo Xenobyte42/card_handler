@@ -15,14 +15,16 @@
 
     <body class="bg-light text-center">
     
-        <form class="form-signin">
+        <form class="form-signin" action="{{ url('login') }}" method="post">
             <h1 class="text-dark">CardSearcher</h1>
             <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-            <label for="inputEmail" class="sr-only">Login</label>
-            <input type="login" id="inputLogin" class="form-control" placeholder="Login" required autofocus>
-                <label for="inputPassword" class="sr-only">Password</label>
-            <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+
+            <label for="login" class="sr-only">Login</label>
+            <input type="text" name="login" id="login" class="form-control" placeholder="Login" required autofocus>
+            <label for="password" class="sr-only">Password</label>
+            <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+            <button class="btn btn-lg btn-primary btn-block" type="submit" value="login">Sign in</button>
+
         </form>
     
         <footer class="footer mt-4">
