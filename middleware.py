@@ -2,6 +2,8 @@ import aiohttp_jinja2
 from aiohttp import web
 
 
+# 404 and 500 error handling
+
 async def handle_404(request):
     return aiohttp_jinja2.render_template('404.html', request, {})
 
