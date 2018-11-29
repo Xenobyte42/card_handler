@@ -1,9 +1,16 @@
 import aiohttp_jinja2
 import aiohttp_auth
 import cards
+import urllib
 from aiohttp import web
 from functools import wraps
 
+
+#TODO: пробелы в именах файлов
+#TODO: починить донаты
+
+PIC_COST = 20
+STATIC_PATH = './static/img/'
 
 # The decorator redirects to the authentication page,
 # if the user is not logged in
@@ -18,8 +25,50 @@ def auth_redirect(func):
         return answer
     return decorator
 
-async def img_card(request):
-    pass
+async def save_image(request, card_src, card):
+    card_img = urllib.request.urlopen(card_src)
+    local_path = STATIC_PATH + card + '.jpg'
+    with open(local_path, 'wb') as f:
+        f.write(card_img.read())
+    request.app['redis'].set('card:' + card + ':img', local_path)
+
+async def get_img_card(request, card):
+    user = await aiohttp_auth.auth.get_auth(request)
+    login = str(user)
+    card_key = 'card:' + card + ':img'
+    card_users_key = 'card:' + card + ':users'
+    balance_key = 'user:' + login + ':balance'
+    card_src = await request.app['redis'].get(card_key)
+
+    # If the picture is already in the database
+    if card_src:
+        card_src = card_src.decode()
+        user_len = await request.app['redis'].llen(card_users_key)
+        card_users = await request.app['redis'].lrange(card_users_key, 0, user_len)
+        print(card_users)
+        if not card_users or login.encode() not in card_users:
+            await request.app['redis'].lpush(card_users_key, login)
+            await request.app['redis'].decrby(balance_key, PIC_COST)
+
+        balance = await request.app['redis'].get(balance_key)
+        balance = balance.decode()
+    else:
+        cardseeker = cards.CardSeeker(card)
+        await cardseeker.request()
+
+        try:
+            card_src = cardseeker.get_img_src()
+            card = cardseeker.get_name()
+            await request.app['redis'].decrby(balance_key, PIC_COST)
+            await save_image(request, card_src, card)
+        except cards.CardNotFound:
+            card_src = STATIC_PATH + 'not_found.jpg'
+            card = 'No such card!'
+        balance = await request.app['redis'].get(balance_key)
+        balance = balance.decode()
+    params = {'login':login, 'balance': balance,
+              'card': card, 'src': card_src}
+    return params
 
 # Login/logout view
 
@@ -58,25 +107,9 @@ async def auth(request):
 async def card_handler(request):
     params = await request.post()
     card = params.get('card', None)
-    cardseeker = cards.CardSeeker(card)
-    await cardseeker.request()
+    params = await get_img_card(request, card)
 
-    try:
-        card_src = cardseeker.get_img_src()
-        card = cardseeker.get_name()
-    except cards.CardNotFound:
-        card_src = "static/img/not_found.jpg"
-        card = "No such card!"
-        
-    user = await aiohttp_auth.auth.get_auth(request)
-    login = str(user)
-    balance_key = 'user:' + login + ':balance'
-    balance = await request.app['redis'].get(balance_key)
-    balance = balance.decode()
-
-    params = {'login':login, 'balance': balance,
-              'card': card, 'src': card_src}
-    await aiohttp_auth.auth.remember(request, login)
+    await aiohttp_auth.auth.remember(request, params['login'])
     return aiohttp_jinja2.render_template('card.html',
                                           request,
                                           params)

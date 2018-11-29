@@ -6,7 +6,7 @@ from aiohttp import web
 from settings import setup_static_routes, setup_jinja, on_shutdown
 from urls import setup_routes
 from middleware import setup_middleware
-from aiohttp_session import get_session, session_middleware
+from aiohttp_session import session_middleware
 from aiohttp_session.redis_storage import RedisStorage
 
 
