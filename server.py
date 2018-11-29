@@ -3,7 +3,8 @@ import configparser
 from aiohttp_auth import auth
 from os import urandom
 from aiohttp import web
-from urls import setup_routes, setup_static_routes, setup_jinja
+from settings import setup_static_routes, setup_jinja, on_shutdown
+from urls import setup_routes
 from middleware import setup_middleware
 from aiohttp_session import get_session, session_middleware
 from aiohttp_session.redis_storage import RedisStorage
@@ -38,6 +39,8 @@ class WebServer:
         self._app = web.Application(middlewares=middlewares)
         self._app['redis'] = self._redis
         self.setup_server()
+
+        self._app.on_shutdown.append(on_shutdown)
         return self._app
 
 

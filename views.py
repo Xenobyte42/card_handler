@@ -1,5 +1,6 @@
 import aiohttp_jinja2
 import aiohttp_auth
+import cards
 from aiohttp import web
 from functools import wraps
 
@@ -16,6 +17,9 @@ def auth_redirect(func):
             return web.HTTPFound(url)
         return answer
     return decorator
+
+async def img_card(request):
+    pass
 
 # Login/logout view
 
@@ -54,13 +58,25 @@ async def auth(request):
 async def card_handler(request):
     params = await request.post()
     card = params.get('card', None)
-    user = await aiohttp_auth.auth.get_auth(request)
+    cardseeker = cards.CardSeeker(card)
+    await cardseeker.request()
 
+    try:
+        card_src = cardseeker.get_img_src()
+        card = cardseeker.get_name()
+    except cards.CardNotFound:
+        card_src = "static/img/not_found.jpg"
+        card = "No such card!"
+        
+    user = await aiohttp_auth.auth.get_auth(request)
     login = str(user)
     balance_key = 'user:' + login + ':balance'
     balance = await request.app['redis'].get(balance_key)
     balance = balance.decode()
-    params = {'login':login, 'balance': balance, 'card': card}
+
+    params = {'login':login, 'balance': balance,
+              'card': card, 'src': card_src}
+    await aiohttp_auth.auth.remember(request, login)
     return aiohttp_jinja2.render_template('card.html',
                                           request,
                                           params)
@@ -75,6 +91,7 @@ async def index(request):
     balance = await request.app['redis'].get(balance_key)
     balance = balance.decode()
     params = {'login':login, 'balance': balance}
+    await aiohttp_auth.auth.remember(request, login)
     return aiohttp_jinja2.render_template('index.html',
                                           request,
                                           params)
