@@ -25,3 +25,15 @@ To start the web server for the first time, configure `config-file` redis.cfg:
 
 To start server you must use `python3 server.py -i <host> -p <port> -c <config_file_path>`
 
+# Database usage
+
+All data in the database is stored on a strictly defined template:
+
+`user:<login>:password` - user password;
+
+`user:<login>:balance` - user balance;
+
+`card:img_name>:img` - path to image source;
+
+`card:<name>:users` - list of users who bought this card;
+
