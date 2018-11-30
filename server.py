@@ -1,3 +1,5 @@
+import argparse
+from sys import argv
 from os import urandom
 from configparser import ConfigParser
 from aiohttp import web
@@ -19,13 +21,15 @@ DB_SECTION = 'db'
 
 class WebServer:
 
-    def __init__(self, cfgpath):
+    def __init__(self, params):
         cfg_parser = ConfigParser()
-        cfg_parser.read(cfgpath)
+        cfg_parser.read(params.config)
 
         self._host = cfg_parser[SECTION][HOST_SECTION]
         self._port = int(cfg_parser[SECTION][PORT_SECTION])
         self._db_id = int(cfg_parser[SECTION][DB_SECTION])
+        self._webhost = params.host
+        self._webport = params.port
 
     async def _make_app(self):
         """Create a Web application, configure 
@@ -64,9 +68,37 @@ class WebServer:
     def run(self):
         """Function running web-server"""
 
-        web.run_app(self._make_app())
+        web.run_app(self._make_app(), host=self._webhost, port=self._webport)
 
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='This is a server parser')
+    parser.add_argument(
+        '-i',
+        action='store',
+        dest='host',
+        type=str,
+        default='0.0.0.0',
+        help='Server host'
+    )
+    parser.add_argument(
+        '-p',
+        action='store',
+        dest='port',
+        type=int,
+        default=8080,
+        help='Sever port'
+    )
+    parser.add_argument(
+        '-c',
+        action='store',
+        dest='config',
+        type=str,
+        default='redis.cfg',
+        help='Redis config'
+    )
+    return parser.parse_args(args)
 
-if __name__ == "__main__":
-    server = WebServer('redis.cfg')
+if __name__ == '__main__':
+    params = parse_args(argv[1:])
+    server = WebServer(params)
     server.run()

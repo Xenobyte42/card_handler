@@ -23,3 +23,5 @@ To start the web server for the first time, configure `config-file` redis.cfg:
 
 `db`=database_number
 
+To start server you must use `python3 server.py -i <host> -p <port> -c <config_file_path>`
+
