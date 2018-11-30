@@ -6,6 +6,9 @@ class CardNotFound(Exception):
 
 
 class CardSeeker:
+    """А class that pumps out and
+    stores map information in JSON format
+    """
 
     def __init__(self, fuzzy):
         self._url = "https://api.scryfall.com/cards/named?fuzzy={}".format(fuzzy)

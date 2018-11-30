@@ -8,6 +8,7 @@ def setup_routes(app):
               ('*', '/logout', logout, 'logout'),
               ('*', '/card', card_handler, 'card_handler'),
     ]
+
     for route in routes:
         app.router.add_route(route[0], route[1], route[2], name=route[3])
 

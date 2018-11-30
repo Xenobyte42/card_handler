@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>CardSearcher</title>
+
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="{{ static('css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ static('css/styles.css') }}">
+        <link rel="stylesheet" href="{{ static('css/sticky-footer.css') }}">
+    </head>
+
+    <body class="bg-light">
+        <header>
+            <nav class="navbar bg-dark p-2 text-center">
+                <div class="container-fluid">
+                    <div>
+                        <h3 class="d-inline text-white"><a href="{{ url('index') }}" class="text-white">Card Searcher</a></h3>
+                    </div>
+                    <form class="form-inline my-2 my-lg-0" action="{{ url('card_handler') }}" method="post">
+                        <label for="card"></label>
+                        <input class="form-control mr-sm-2" type="text" name="card" id="card" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" value="card">Search!</button>
+                    </form>
+                    
+                    <div class="navbar-nav">
+                        <div class="navbar-item ">
+                            <div class="row">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <a class="p-2 text-white" href="#">{{ login }}</a>
+                                    </div>
+                                    <div class="col-5 pl-4">
+                                        <p class="text-white">Balance: {{ balance }}</p>
+                                    </div>
+                                    <div class="col-7">
+                                        <a class="p-2 text-white" href="{{ url('logout') }}">Log Out</a>
+                                    </div>
+                                </div>     
+                            </div>
+                        </div> 
+                    </div>
+                    
+                </div>
+            </nav>
+        </header>
+
+        <main role="main" class="container">
+        
+            <div class="col-8 blog-main mt-2">
+                {% block content %} {% endblock %}
+            </div>
+        </main>
+    <body> 
