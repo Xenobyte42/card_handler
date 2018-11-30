@@ -3,6 +3,11 @@
 API for searching cards from Scryfall Magic Card searching
 
 # Dependencies
+
+To start the server you need to have a `redis` database and running `redis-server`.
+
+Python requirements:
+
 - python3.5.x and more
 - configparser
 - aiohttp
