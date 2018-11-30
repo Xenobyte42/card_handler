@@ -3,6 +3,7 @@ from views import index, card_handler, auth, login, logout
 
 def setup_routes(app):
     """Setting up routing"""
+
     routes = [('*', '/', index, 'index'),
               ('*', '/auth', auth, 'auth'),
               ('*', '/login', login, 'login'),

@@ -6,8 +6,6 @@ from aiohttp import web
 import cards
 
 
-#TODO(Xenobyte42): get_img_card so big
-
 PIC_COST = 20
 STATIC_PATH = './static/img/'
 
@@ -34,54 +32,74 @@ async def save_image(request, card_src, card):
         f.write(card_img.read())
     await request.app['redis'].set('card:' + card + ':img', local_path)
 
-async def get_img_card(request, card):
-    user = await aiohttp_auth.auth.get_auth(request)
-    login = str(user)
+async def get_img_from_drive(request, card_src, login, card):
+    """Gets an image from the static on disk"""
+
     card_name = card
     card = card.replace(" ", "").lower()
-    card_key = 'card:' + card + ':img'
-    card_users_key = 'card:' + card + ':users'
     balance_key = 'user:' + login + ':balance'
-    card_src = await request.app['redis'].get(card_key)
+    card_users_key = 'card:' + card + ':users'
+
     balance = await request.app['redis'].get(balance_key)
     balance = int(balance.decode())
 
-    # If the picture is already in the database
+    card_src = card_src.decode()
+    user_len = await request.app['redis'].llen(card_users_key)
+    card_users = await request.app['redis'].lrange(card_users_key, 0, user_len)
+
+    if not card_users or login.encode() not in card_users:
+        if balance < PIC_COST:
+            card_src = STATIC_PATH + 'no_money.jpg'
+            card_name = 'Insufficient funds =('
+        else:
+            balance -= PIC_COST
+            await request.app['redis'].lpush(card_users_key, login)
+            await request.app['redis'].decrby(balance_key, PIC_COST)
+    return {'login':login, 'balance': balance,
+            'card': card_name, 'src': card_src}
+
+async def get_img_from_website(request, card, login):
+    """Downloads the image from the website and saves it to disk"""
+
+    card_name = card
+    card = card.replace(" ", "").lower()
+    balance_key = 'user:' + login + ':balance'
+    card_users_key = 'card:' + card + ':users'
+
+    balance = await request.app['redis'].get(balance_key)
+    balance = int(balance.decode())
+
+    cardseeker = cards.CardSeeker(card)
+    await cardseeker.request()
+    try:
+        card_src = cardseeker.get_img_src()
+        card = cardseeker.get_name().replace(" ", "").lower()
+        
+        if balance < PIC_COST:
+            card_src = STATIC_PATH + 'no_money.jpg'
+            card_name = 'Insufficient funds =('
+        else:
+            balance -= PIC_COST
+            await request.app['redis'].lpush(card_users_key, login)
+            await request.app['redis'].decrby(balance_key, PIC_COST)
+            await save_image(request, card_src, card)
+    except cards.CardNotFound:
+        card_src = STATIC_PATH + 'not_found.jpg'
+        card_name = 'No such card!'
+    return {'login':login, 'balance': balance,
+            'card': card_name, 'src': card_src}
+
+async def get_img_card(request, card):
+    user = await aiohttp_auth.auth.get_auth(request)
+    login = str(user)
+
+    card_key = 'card:' + card + ':img'
+    card_src = await request.app['redis'].get(card_key)
+
     if card_src:
-        card_src = card_src.decode()
-        user_len = await request.app['redis'].llen(card_users_key)
-        card_users = await request.app['redis'].lrange(card_users_key, 0, user_len)
-
-        if not card_users or login.encode() not in card_users:
-            if balance < PIC_COST:
-                card_src = STATIC_PATH + 'no_money.jpg'
-                card_name = 'Insufficient funds =('
-            else:
-                balance -= PIC_COST
-                await request.app['redis'].lpush(card_users_key, login)
-                await request.app['redis'].decrby(balance_key, PIC_COST)
-
+        params = await get_img_from_drive(request, card_src, login, card)
     else:
-        cardseeker = cards.CardSeeker(card)
-        await cardseeker.request()
-        try:
-            card_src = cardseeker.get_img_src()
-            card = cardseeker.get_name().replace(" ", "").lower()
-            
-            if balance < PIC_COST:
-                card_src = STATIC_PATH + 'no_money.jpg'
-                card_name = 'Insufficient funds =('
-            else:
-                balance -= PIC_COST
-                await request.app['redis'].lpush(card_users_key, login)
-                await request.app['redis'].decrby(balance_key, PIC_COST)
-                await save_image(request, card_src, card)
-        except cards.CardNotFound:
-            card_src = STATIC_PATH + 'not_found.jpg'
-            card_name = 'No such card!'
-
-    params = {'login':login, 'balance': balance,
-              'card': card_name, 'src': card_src}
+        params = await get_img_from_website(request, card, login)
     return params
 
 # Login/logout view

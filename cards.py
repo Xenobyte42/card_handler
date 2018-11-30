@@ -11,7 +11,7 @@ class CardSeeker:
     """
 
     def __init__(self, fuzzy):
-        self._url = "https://api.scryfall.com/cards/named?fuzzy={}".format(fuzzy)
+        self._url = 'https://api.scryfall.com/cards/named?fuzzy={}'.format(fuzzy)
         self._cardjson = None
 
     async def get_request(self, client, url):
