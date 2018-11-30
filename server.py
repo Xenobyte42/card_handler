@@ -1,13 +1,14 @@
-import aioredis
-import configparser
-from aiohttp_auth import auth
 from os import urandom
+from configparser import ConfigParser
 from aiohttp import web
-from settings import setup_static_routes, setup_jinja, on_shutdown
-from urls import setup_routes
-from middleware import setup_middleware
+from aioredis import create_redis
+from aiohttp_auth import auth
 from aiohttp_session import session_middleware, setup
 from aiohttp_session.redis_storage import RedisStorage
+
+from urls import setup_routes
+from middleware import setup_middleware
+from settings import setup_static_routes, setup_jinja, on_shutdown
 
 
 SECTION = 'redis_config'
@@ -19,7 +20,7 @@ DB_SECTION = 'db'
 class WebServer:
 
     def __init__(self, cfgpath):
-        cfg_parser = configparser.ConfigParser()
+        cfg_parser = ConfigParser()
         cfg_parser.read(cfgpath)
 
         self._host = cfg_parser[SECTION][HOST_SECTION]
@@ -32,8 +33,8 @@ class WebServer:
         and configure the web application for
         the first time
         """
-        self._redis = await aioredis.create_redis((self._host, self._port),
-                                                  db=self._db_id)
+        self._redis = await create_redis((self._host, self._port),
+                                         db=self._db_id)
 
         policy = auth.SessionTktAuthentication(urandom(32),
                                                3600,

@@ -6,6 +6,8 @@ from aiohttp import web
 import cards
 
 
+#TODO(Xenobyte42): get_img_card so big
+
 PIC_COST = 20
 STATIC_PATH = './static/img/'
 
@@ -14,7 +16,6 @@ def auth_redirect(func):
     """The decorator redirects to the authentication page,
     if the user is not logged in
     """
-
     async def decorator(*args, **kwargs):
         try:
             answer = await func(*args, **kwargs)
@@ -123,7 +124,6 @@ async def card_handler(request):
 
     params = await get_img_card(request, card)
 
-    await aiohttp_auth.auth.remember(request, params['login'])
     return aiohttp_jinja2.render_template('card.html',
                                           request,
                                           params)
@@ -139,7 +139,6 @@ async def index(request):
     balance = balance.decode()
 
     params = {'login':login, 'balance': balance}
-    await aiohttp_auth.auth.remember(request, login)
 
     return aiohttp_jinja2.render_template('index.html',
                                           request,
