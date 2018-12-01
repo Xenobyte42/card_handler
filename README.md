@@ -1,4 +1,4 @@
-# CardSeacrcher
+# CardSearcher
 
 API for searching cards from Scryfall Magic Card searching
 
