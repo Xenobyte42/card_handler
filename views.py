@@ -65,6 +65,7 @@ async def get_img_from_website(request, card, login):
     card = card.replace(" ", "").lower()
     balance_key = 'user:' + login + ':balance'
     card_users_key = 'card:' + card + ':users'
+    card_img_key = 'card:' + card + ':img'
 
     balance = await request.app['redis'].get(balance_key)
     balance = int(balance.decode())
@@ -93,7 +94,8 @@ async def get_img_card(request, card):
     user = await aiohttp_auth.auth.get_auth(request)
     login = str(user)
 
-    card_key = 'card:' + card + ':img'
+    card_name = card.replace(" ", "").lower()
+    card_key = 'card:' + card_name + ':img'
     card_src = await request.app['redis'].get(card_key)
 
     if card_src:
