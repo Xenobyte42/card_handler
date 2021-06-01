@@ -4,4 +4,4 @@ aiohttp-jinja2==1.1.0
 aiohttp-session==2.7.0
 aioredis==1.2.0
 Jinja2==2.10
-urllib3==1.23
+urllib3==1.26.5
